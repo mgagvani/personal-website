@@ -41,6 +41,9 @@ function initNavIndicator() {
   // Set initial position (hide it initially)
   gsap.set(indicator, { width: 0, opacity: 0 })
 
+  // Track if animation is running to prevent stacking
+  let isAnimating = false
+
   // Handle click navigation with sliding animation
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
@@ -52,18 +55,19 @@ function initNavIndicator() {
         // Animate indicator to clicked link
         moveIndicatorToLink(link)
 
-        // Add jiggle animation to nav
-        gsap.to('.nav', {
-          x: 0,
-          duration: 0.1,
-          ease: 'power2.out',
-          onComplete: () => {
-            gsap.fromTo('.nav',
-              { x: -3 },
-              { x: 0, duration: 0.4, ease: 'elastic.out(1, 0.3)' }
-            )
-          }
-        })
+        // Only add subtle jiggle animation once (prevent stacking)
+        if (!isAnimating) {
+          isAnimating = true
+          gsap.fromTo('.nav',
+            { x: -2 },
+            {
+              x: 0,
+              duration: 0.3,
+              ease: 'power2.out',
+              onComplete: () => { isAnimating = false }
+            }
+          )
+        }
 
         // Smooth scroll to section
         gsap.to(window, {

@@ -1,6 +1,6 @@
 /**
  * Engineering Portfolio - Main JavaScript
- * Handles animations, horizontal scroll, and interactions
+ * Handles animations, horizontal scroll, sliding nav, and interactions
  */
 
 import './style.css'
@@ -11,11 +11,16 @@ import { initThreeScene } from './three-scene.js'
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger)
 
+// Global state
+let currentSection = 'hero'
+const navIndicator = document.querySelector('.nav-indicator')
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initThreeScene()
+  initNavIndicator()
   initAnimations()
-  initHorizontalScroll()
+  initHorizontalScrollSections()
   initInteractions()
 
   // Mark body as loaded for CSS animations
@@ -25,6 +30,115 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 /**
+ * Initialize sliding nav indicator
+ */
+function initNavIndicator() {
+  const navLinks = document.querySelectorAll('.nav-links a:not(.nav-cta)')
+  const indicator = document.querySelector('.nav-indicator')
+
+  if (!indicator || navLinks.length === 0) return
+
+  // Set initial position (hide it initially)
+  gsap.set(indicator, { width: 0, opacity: 0 })
+
+  // Handle click navigation with sliding animation
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault()
+      const targetId = link.getAttribute('href').substring(1)
+      const targetSection = document.getElementById(targetId)
+
+      if (targetSection) {
+        // Animate indicator to clicked link
+        moveIndicatorToLink(link)
+
+        // Add jiggle animation to nav
+        gsap.to('.nav', {
+          x: 0,
+          duration: 0.1,
+          ease: 'power2.out',
+          onComplete: () => {
+            gsap.fromTo('.nav',
+              { x: -3 },
+              { x: 0, duration: 0.4, ease: 'elastic.out(1, 0.3)' }
+            )
+          }
+        })
+
+        // Smooth scroll to section
+        gsap.to(window, {
+          duration: 1.2,
+          scrollTo: { y: targetSection, offsetY: 50 },
+          ease: 'power3.inOut'
+        })
+
+        // Update active state
+        navLinks.forEach(l => l.classList.remove('active'))
+        link.classList.add('active')
+      }
+    })
+  })
+
+  // Update indicator on scroll
+  const sections = document.querySelectorAll('section[data-section]')
+
+  sections.forEach(section => {
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 40%',
+      end: 'bottom 40%',
+      onEnter: () => updateActiveSection(section.dataset.section, navLinks),
+      onEnterBack: () => updateActiveSection(section.dataset.section, navLinks),
+    })
+  })
+}
+
+/**
+ * Move indicator to a specific link with smooth animation
+ */
+function moveIndicatorToLink(link) {
+  const indicator = document.querySelector('.nav-indicator')
+  if (!indicator) return
+
+  // Get the link's position relative to nav-links container
+  const navLinks = link.closest('.nav-links')
+  if (!navLinks) return
+
+  const linkOffset = link.offsetLeft
+  const linkWidth = link.offsetWidth
+
+  gsap.to(indicator, {
+    left: linkOffset,
+    width: linkWidth,
+    opacity: 1,
+    duration: 0.4,
+    ease: 'power3.out'
+  })
+}
+
+/**
+ * Update active section based on scroll position
+ */
+function updateActiveSection(sectionId, navLinks) {
+  if (currentSection === sectionId) return
+  currentSection = sectionId
+
+  const activeLink = document.querySelector(`.nav-links a[data-section="${sectionId}"]`)
+
+  if (activeLink) {
+    navLinks.forEach(l => l.classList.remove('active'))
+    activeLink.classList.add('active')
+    moveIndicatorToLink(activeLink)
+  } else {
+    // No nav link for this section (e.g., hero), hide indicator
+    gsap.to('.nav-indicator', {
+      opacity: 0,
+      duration: 0.3
+    })
+  }
+}
+
+/**
  * Initialize page load and scroll-triggered animations
  */
 function initAnimations() {
@@ -32,115 +146,59 @@ function initAnimations() {
   const heroTimeline = gsap.timeline({ delay: 0.3 })
 
   heroTimeline
-    .to('.hero-title .title-line', {
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      stagger: 0.15,
-      ease: 'power3.out',
-      from: { y: 60 }
-    })
-    .to('.hero-subtitle', {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      ease: 'power3.out',
-      from: { y: 30 }
-    }, '-=0.4')
-    .to('.hero-cta', {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      ease: 'power3.out',
-      from: { y: 20 }
-    }, '-=0.3')
-    .to('.hero-metrics .metric-chip', {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      duration: 0.5,
-      stagger: 0.1,
-      ease: 'back.out(1.7)',
-      from: { y: 20, scale: 0.9 }
-    }, '-=0.3')
-
-  // Section headers scroll animation
-  gsap.utils.toArray('.section-label, .section-title, .section-description').forEach((el) => {
-    gsap.fromTo(el,
-      { opacity: 0, y: 40 },
+    .fromTo('.hero-title .title-line',
+      { opacity: 0, y: 60, rotationX: -15 },
+      {
+        opacity: 1,
+        y: 0,
+        rotationX: 0,
+        duration: 1,
+        stagger: 0.15,
+        ease: 'power3.out'
+      }
+    )
+    .fromTo('.hero-subtitle',
+      { opacity: 0, y: 30 },
       {
         opacity: 1,
         y: 0,
         duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 85%',
-          toggleActions: 'play none none reverse'
-        }
-      }
-    )
-  })
-
-  // About section
-  gsap.fromTo('.about-content',
-    { opacity: 0, x: -50 },
-    {
-      opacity: 1,
-      x: 0,
-      duration: 0.8,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: '.about-section',
-        start: 'top 70%'
-      }
-    }
-  )
-
-  gsap.fromTo('.about-skills',
-    { opacity: 0, x: 50 },
-    {
-      opacity: 1,
-      x: 0,
-      duration: 0.8,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: '.about-section',
-        start: 'top 70%'
-      }
-    }
-  )
-
-  // Stat items
-  gsap.fromTo('.stat-item',
-    { opacity: 0, y: 30, scale: 0.9 },
-    {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      duration: 0.6,
-      stagger: 0.1,
-      ease: 'back.out(1.7)',
-      scrollTrigger: {
-        trigger: '.about-stats',
-        start: 'top 85%'
-      }
-    }
-  )
-
-  // Timeline items
-  gsap.utils.toArray('.timeline-item').forEach((item, i) => {
-    gsap.fromTo(item,
-      { opacity: 0, x: -30 },
+        ease: 'power3.out'
+      }, '-=0.5')
+    .fromTo('.hero-cta',
+      { opacity: 0, y: 20 },
       {
         opacity: 1,
-        x: 0,
+        y: 0,
         duration: 0.6,
-        delay: i * 0.15,
+        ease: 'power3.out'
+      }, '-=0.4')
+    .fromTo('.hero-metrics .metric-chip',
+      { opacity: 0, y: 20, scale: 0.9 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'back.out(1.7)'
+      }, '-=0.3')
+
+  // Section headers scroll animation
+  gsap.utils.toArray('.section-header').forEach((header) => {
+    gsap.fromTo(header.children,
+      { opacity: 0, y: 40, x: -20 },
+      {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        duration: 0.8,
+        stagger: 0.15,
         ease: 'power3.out',
         scrollTrigger: {
-          trigger: item,
-          start: 'top 85%'
+          trigger: header,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse'
         }
       }
     )
@@ -163,26 +221,68 @@ function initAnimations() {
 }
 
 /**
- * Initialize horizontal scroll for projects section
+ * Initialize all horizontal scroll sections
  */
-function initHorizontalScroll() {
-  const scrollContainer = document.querySelector('.projects-scroll-container')
-  const track = document.querySelector('.projects-track')
-  const progressBar = document.querySelector('.scroll-progress-bar')
+function initHorizontalScrollSections() {
+  // Projects horizontal scroll
+  initHorizontalScroll('.projects-scroll-container', '.projects-track', '.scroll-progress-bar')
 
-  if (!scrollContainer || !track) return
+  // About horizontal scroll
+  initHorizontalScroll('.about-scroll-container', '.about-track', null)
+
+  // Experience section - animate cards on scroll (no horizontal scroll)
+  initExperienceAnimations()
+}
+
+/**
+ * Initialize experience section animations (vertical layout)
+ */
+function initExperienceAnimations() {
+  const cards = document.querySelectorAll('.experience-card')
+
+  cards.forEach((card, i) => {
+    gsap.fromTo(card,
+      { opacity: 0, x: -30, y: 20 },
+      {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        duration: 0.6,
+        delay: i * 0.15,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 85%'
+        }
+      }
+    )
+  })
+}
+
+/**
+ * Initialize horizontal scroll for a specific section
+ */
+function initHorizontalScroll(containerSelector, trackSelector, progressBarSelector) {
+  const container = document.querySelector(containerSelector)
+  const track = document.querySelector(trackSelector)
+  const progressBar = progressBarSelector ? document.querySelector(progressBarSelector) : null
+
+  if (!container || !track) return
+
+  // Get cards within this track
+  const cards = track.querySelectorAll('.project-card, .about-card, .experience-card')
 
   // Calculate the total scroll width
   const getScrollWidth = () => {
-    return track.scrollWidth - scrollContainer.offsetWidth
+    return track.scrollWidth - container.offsetWidth
   }
 
   // Create the horizontal scroll animation
-  const horizontalScroll = gsap.to(track, {
+  gsap.to(track, {
     x: () => -getScrollWidth(),
     ease: 'none',
     scrollTrigger: {
-      trigger: scrollContainer,
+      trigger: container,
       start: 'top 20%',
       end: () => `+=${getScrollWidth()}`,
       scrub: 1,
@@ -190,7 +290,7 @@ function initHorizontalScroll() {
       anticipatePin: 1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        // Update progress bar
+        // Update progress bar if exists
         if (progressBar) {
           gsap.to(progressBar, {
             width: `${self.progress * 100}%`,
@@ -202,25 +302,26 @@ function initHorizontalScroll() {
     }
   })
 
-  // Animate project cards as they come into view
-  gsap.utils.toArray('.project-card').forEach((card, i) => {
-    gsap.fromTo(card,
-      { opacity: 0, y: 50, scale: 0.95 },
+  // Animate cards as they come into view
+  if (cards.length > 0) {
+    gsap.fromTo(cards,
+      { opacity: 0, y: 50, scale: 0.95, x: 30 },
       {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: 0.6,
-        delay: i * 0.1,
+        x: 0,
+        duration: 0.8,
+        stagger: 0.1,
         ease: 'power3.out',
         scrollTrigger: {
-          trigger: scrollContainer,
+          trigger: container,
           start: 'top 60%',
           toggleActions: 'play none none reverse'
         }
       }
     )
-  })
+  }
 
   // Refresh ScrollTrigger on resize
   let resizeTimer
@@ -236,43 +337,25 @@ function initHorizontalScroll() {
  * Initialize micro-interactions
  */
 function initInteractions() {
-  // Smooth scroll for navigation links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault()
-      const target = document.querySelector(this.getAttribute('href'))
-      if (target) {
-        // Account for horizontal scroll section
-        const targetSection = this.getAttribute('href')
-        if (targetSection === '#projects') {
-          // Scroll to projects with offset
-          gsap.to(window, {
-            duration: 1,
-            scrollTo: { y: target, offsetY: 100 },
-            ease: 'power3.inOut'
-          })
-        } else {
-          target.scrollIntoView({ behavior: 'smooth' })
-        }
-      }
-    })
-  })
+  // Import ScrollToPlugin for smooth scrolling
+  gsap.registerPlugin(ScrollToPlugin)
 
-  // Card hover effects
-  document.querySelectorAll('.project-card').forEach(card => {
+  // Card hover effects with slide
+  document.querySelectorAll('.project-card, .about-card, .experience-card').forEach(card => {
     card.addEventListener('mouseenter', () => {
       gsap.to(card, {
-        y: -8,
-        duration: 0.3,
+        y: -12,
+        scale: 1.02,
+        duration: 0.4,
         ease: 'power2.out'
       })
 
-      // Animate metrics
-      const metrics = card.querySelectorAll('.metric-chip')
-      gsap.to(metrics, {
-        y: -2,
-        duration: 0.2,
-        stagger: 0.05,
+      // Animate metrics/tags with stagger
+      const chips = card.querySelectorAll('.metric-chip, .skill-tag, .tag')
+      gsap.to(chips, {
+        y: -3,
+        duration: 0.3,
+        stagger: 0.03,
         ease: 'power2.out'
       })
     })
@@ -280,47 +363,48 @@ function initInteractions() {
     card.addEventListener('mouseleave', () => {
       gsap.to(card, {
         y: 0,
-        duration: 0.3,
+        scale: 1,
+        duration: 0.4,
         ease: 'power2.out'
       })
 
-      const metrics = card.querySelectorAll('.metric-chip')
-      gsap.to(metrics, {
+      const chips = card.querySelectorAll('.metric-chip, .skill-tag, .tag')
+      gsap.to(chips, {
         y: 0,
-        duration: 0.2,
-        stagger: 0.05,
+        duration: 0.3,
+        stagger: 0.03,
         ease: 'power2.out'
       })
     })
   })
 
-  // Button ripple effect
-  document.querySelectorAll('.btn-primary, .nav-cta').forEach(btn => {
-    btn.addEventListener('mouseenter', (e) => {
+  // Button hover effects
+  document.querySelectorAll('.btn-primary').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
       gsap.to(btn, {
-        scale: 1.02,
-        duration: 0.2,
-        ease: 'power2.out'
+        scale: 1.05,
+        duration: 0.3,
+        ease: 'back.out(1.7)'
       })
     })
 
     btn.addEventListener('mouseleave', () => {
       gsap.to(btn, {
         scale: 1,
-        duration: 0.2,
+        duration: 0.3,
         ease: 'power2.out'
       })
     })
   })
 
-  // Social link hover
+  // Social link hover with rotation
   document.querySelectorAll('.social-link').forEach(link => {
     link.addEventListener('mouseenter', () => {
       gsap.to(link, {
-        y: -4,
-        rotation: 5,
-        duration: 0.3,
-        ease: 'power2.out'
+        y: -6,
+        rotation: 8,
+        duration: 0.4,
+        ease: 'back.out(1.7)'
       })
     })
 
@@ -328,7 +412,7 @@ function initInteractions() {
       gsap.to(link, {
         y: 0,
         rotation: 0,
-        duration: 0.3,
+        duration: 0.4,
         ease: 'power2.out'
       })
     })
@@ -342,11 +426,11 @@ function initInteractions() {
     const currentScroll = window.pageYOffset
 
     if (currentScroll > 100) {
-      nav.style.backdropFilter = 'blur(20px)'
-      nav.style.background = 'rgba(255, 255, 255, 0.8)'
+      nav.style.backdropFilter = 'blur(24px)'
+      nav.style.background = 'rgba(255, 255, 255, 0.5)'
     } else {
-      nav.style.backdropFilter = 'blur(12px)'
-      nav.style.background = 'rgba(255, 255, 255, 0.65)'
+      nav.style.backdropFilter = 'blur(16px)'
+      nav.style.background = 'rgba(255, 255, 255, 0.35)'
     }
 
     lastScroll = currentScroll
@@ -355,6 +439,7 @@ function initInteractions() {
   // Parallax effect for artifact SVGs
   document.querySelectorAll('.artifact-svg').forEach(svg => {
     const parent = svg.closest('.project-card')
+    if (!parent) return
 
     parent.addEventListener('mousemove', (e) => {
       const rect = parent.getBoundingClientRect()
@@ -362,9 +447,11 @@ function initInteractions() {
       const y = (e.clientY - rect.top) / rect.height - 0.5
 
       gsap.to(svg, {
-        x: x * 10,
-        y: y * 10,
-        duration: 0.3,
+        x: x * 15,
+        y: y * 15,
+        rotationY: x * 5,
+        rotationX: -y * 5,
+        duration: 0.5,
         ease: 'power2.out'
       })
     })
@@ -373,9 +460,42 @@ function initInteractions() {
       gsap.to(svg, {
         x: 0,
         y: 0,
-        duration: 0.5,
+        rotationY: 0,
+        rotationX: 0,
+        duration: 0.6,
         ease: 'power2.out'
       })
     })
   })
+
+  // Stat items counter animation
+  const statValues = document.querySelectorAll('.stat-value')
+  statValues.forEach(stat => {
+    const value = stat.textContent
+    const numericPart = parseFloat(value)
+
+    if (!isNaN(numericPart)) {
+      ScrollTrigger.create({
+        trigger: stat,
+        start: 'top 80%',
+        onEnter: () => {
+          gsap.from(stat, {
+            textContent: 0,
+            duration: 1.5,
+            ease: 'power2.out',
+            snap: { textContent: 1 },
+            onUpdate: function () {
+              const current = Math.round(gsap.getProperty(stat, 'textContent'))
+              stat.textContent = value.replace(numericPart, current)
+            }
+          })
+        },
+        once: true
+      })
+    }
+  })
 }
+
+// Import ScrollToPlugin
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+gsap.registerPlugin(ScrollToPlugin)

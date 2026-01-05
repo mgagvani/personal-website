@@ -22,13 +22,14 @@
   <!-- Three.js Canvas Background -->
   <canvas id="three-canvas"></canvas>
 
-  <!-- Navigation -->
+  <!-- Navigation with Sliding Indicator -->
   <nav class="nav glass">
     <a href="#" class="nav-logo">Portfolio</a>
     <div class="nav-links">
-      <a href="#projects">Projects</a>
-      <a href="#about">About</a>
-      <a href="#experience">Experience</a>
+      <div class="nav-indicator"></div>
+      <a href="#projects" data-section="projects">Projects</a>
+      <a href="#about" data-section="about">About</a>
+      <a href="#experience" data-section="experience">Experience</a>
       <a href="#contact" class="nav-cta glass">Contact</a>
     </div>
   </nav>
@@ -37,7 +38,7 @@
   <main id="app">
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section id="hero" class="hero" data-section="hero">
       <div class="hero-content">
         <h1 class="hero-title">
           <span class="title-line">Engineering</span>
@@ -50,7 +51,7 @@
           where milliseconds matter.
         </p>
         <div class="hero-cta">
-          <a href="#projects" class="btn-primary glass">View Projects</a>
+          <a href="#projects" class="btn-primary glass glass-shimmer">View Projects</a>
           <a href="#contact" class="btn-secondary">Get in Touch</a>
         </div>
         <div class="hero-metrics">
@@ -71,7 +72,7 @@
     </section>
 
     <!-- Projects Section - Horizontal Scroll -->
-    <section id="projects" class="projects-section">
+    <section id="projects" class="projects-section" data-section="projects">
       <div class="section-header">
         <span class="section-label">Featured Work</span>
         <h2 class="section-title">Projects</h2>
@@ -137,7 +138,6 @@
                 <svg viewBox="0 0 400 300" class="artifact-svg">
                   <!-- LiDAR point cloud visualization -->
                   <g class="point-cloud">
-                    <!-- Random points simulating point cloud -->
                     <circle cx="50" cy="180" r="2" fill="var(--accent)" opacity="0.8" />
                     <circle cx="70" cy="160" r="1.5" fill="var(--accent)" opacity="0.6" />
                     <circle cx="90" cy="140" r="2" fill="var(--accent)" opacity="0.9" />
@@ -382,6 +382,62 @@
             </div>
           </article>
 
+          <!-- Project 6 -->
+          <article class="project-card">
+            <div class="project-artifact">
+              <div class="artifact-placeholder" data-type="voxel">
+                <svg viewBox="0 0 400 300" class="artifact-svg">
+                  <!-- Voxel grid visualization -->
+                  <g transform="translate(200, 150)">
+                    <!-- 3D cube grid -->
+                    <g opacity="0.3">
+                      <path d="M-80,-40 L-40,-60 L40,-60 L80,-40 L40,-20 L-40,-20 Z" fill="none" stroke="currentColor"
+                        stroke-width="0.5" />
+                      <path d="M-80,-40 L-80,20 L-40,0 L-40,-60" fill="none" stroke="currentColor" stroke-width="0.5" />
+                      <path d="M80,-40 L80,20 L40,0 L40,-60" fill="none" stroke="currentColor" stroke-width="0.5" />
+                    </g>
+                    <!-- Highlighted voxels -->
+                    <rect x="-30" y="-50" width="20" height="20" fill="var(--accent)" opacity="0.6"
+                      transform="skewX(-20)" />
+                    <rect x="10" y="-30" width="20" height="20" fill="var(--accent)" opacity="0.4"
+                      transform="skewX(-20)" />
+                    <rect x="-50" y="-20" width="20" height="20" fill="var(--accent)" opacity="0.5"
+                      transform="skewX(-20)" />
+                    <rect x="30" y="-10" width="20" height="20" fill="var(--accent)" opacity="0.7"
+                      transform="skewX(-20)" />
+                    <!-- Grid lines -->
+                    <line x1="-100" y1="60" x2="100" y2="60" stroke="currentColor" stroke-width="0.5" opacity="0.2" />
+                    <line x1="-80" y1="80" x2="80" y2="80" stroke="currentColor" stroke-width="0.5" opacity="0.15" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+            <div class="project-content">
+              <div class="project-tags">
+                <span class="tag glass">3D</span>
+                <span class="tag glass">Segmentation</span>
+              </div>
+              <h3 class="project-title">Semantic Voxel Mapping</h3>
+              <p class="project-summary">Real-time semantic 3D reconstruction using voxel representations for robot
+                navigation and scene understanding.</p>
+              <div class="project-metrics">
+                <span class="metric-chip glass">
+                  <span class="metric-value">5cm</span>
+                  <span class="metric-label">Resolution</span>
+                </span>
+                <span class="metric-chip glass">
+                  <span class="metric-value">92%</span>
+                  <span class="metric-label">Accuracy</span>
+                </span>
+                <span class="metric-chip glass">
+                  <span class="metric-value">30Hz</span>
+                  <span class="metric-label">Update</span>
+                </span>
+              </div>
+              <a href="#" class="project-link">Read more →</a>
+            </div>
+          </article>
+
         </div>
       </div>
 
@@ -390,123 +446,153 @@
       </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="about-section">
-      <div class="about-container">
-        <div class="about-content">
-          <span class="section-label">About</span>
-          <h2 class="section-title">Building Systems<br />That Perform</h2>
-          <p class="about-text">
-            I'm an engineer focused on high-performance systems at the intersection of
-            machine learning, robotics, and real-time computing. My work spans from
-            low-latency perception pipelines to distributed training infrastructure.
-          </p>
-          <p class="about-text">
-            I believe in measuring twice and cutting once—every system I build is
-            instrumented, profiled, and optimized. Performance isn't an afterthought;
-            it's a design constraint.
-          </p>
-          <div class="about-stats">
-            <div class="stat-item glass">
-              <span class="stat-value">5+</span>
-              <span class="stat-label">Years Experience</span>
-            </div>
-            <div class="stat-item glass">
-              <span class="stat-value">12</span>
-              <span class="stat-label">Projects Shipped</span>
-            </div>
-            <div class="stat-item glass">
-              <span class="stat-value">3</span>
-              <span class="stat-label">Patents Filed</span>
-            </div>
-          </div>
-        </div>
-        <div class="about-skills">
-          <h3 class="skills-title">Technical Focus</h3>
-          <div class="skills-grid">
-            <div class="skill-category">
-              <h4>Languages</h4>
-              <ul>
-                <li>Python</li>
-                <li>C++</li>
-                <li>Rust</li>
-                <li>CUDA</li>
-              </ul>
-            </div>
-            <div class="skill-category">
-              <h4>ML/Robotics</h4>
-              <ul>
-                <li>PyTorch</li>
-                <li>ROS2</li>
-                <li>TensorRT</li>
-                <li>ONNX</li>
-              </ul>
-            </div>
-            <div class="skill-category">
-              <h4>Infrastructure</h4>
-              <ul>
-                <li>Kubernetes</li>
-                <li>Docker</li>
-                <li>AWS/GCP</li>
-                <li>Terraform</li>
-              </ul>
+    <!-- About Section - Horizontal Scroll -->
+    <section id="about" class="about-section" data-section="about">
+      <div class="section-header">
+        <span class="section-label">About</span>
+        <h2 class="section-title">Building Systems That Perform</h2>
+      </div>
+
+      <div class="about-scroll-container">
+        <div class="about-track">
+
+          <!-- About Card 1 - Introduction -->
+          <div class="about-card glass">
+            <h3 class="about-card-title">The Engineer</h3>
+            <p class="about-card-text">
+              I'm an engineer focused on high-performance systems at the intersection of
+              machine learning, robotics, and real-time computing. My work spans from
+              low-latency perception pipelines to distributed training infrastructure.
+            </p>
+            <div class="about-stats">
+              <div class="stat-item glass">
+                <span class="stat-value">5+</span>
+                <span class="stat-label">Years</span>
+              </div>
+              <div class="stat-item glass">
+                <span class="stat-value">12</span>
+                <span class="stat-label">Projects</span>
+              </div>
+              <div class="stat-item glass">
+                <span class="stat-value">3</span>
+                <span class="stat-label">Patents</span>
+              </div>
             </div>
           </div>
+
+          <!-- About Card 2 - Philosophy -->
+          <div class="about-card glass">
+            <h3 class="about-card-title">Philosophy</h3>
+            <p class="about-card-text">
+              I believe in measuring twice and cutting once—every system I build is
+              instrumented, profiled, and optimized. Performance isn't an afterthought;
+              it's a design constraint. The best code is code that doesn't exist.
+            </p>
+          </div>
+
+          <!-- About Card 3 - Languages -->
+          <div class="about-card glass">
+            <h3 class="about-card-title">Languages</h3>
+            <div class="skills-grid">
+              <span class="skill-tag glass">Python</span>
+              <span class="skill-tag glass">C++</span>
+              <span class="skill-tag glass">Rust</span>
+              <span class="skill-tag glass">CUDA</span>
+              <span class="skill-tag glass">TypeScript</span>
+              <span class="skill-tag glass">Go</span>
+            </div>
+          </div>
+
+          <!-- About Card 4 - ML/Robotics -->
+          <div class="about-card glass">
+            <h3 class="about-card-title">ML & Robotics</h3>
+            <div class="skills-grid">
+              <span class="skill-tag glass">PyTorch</span>
+              <span class="skill-tag glass">TensorFlow</span>
+              <span class="skill-tag glass">ROS2</span>
+              <span class="skill-tag glass">TensorRT</span>
+              <span class="skill-tag glass">ONNX</span>
+              <span class="skill-tag glass">OpenCV</span>
+            </div>
+          </div>
+
+          <!-- About Card 5 - Infrastructure -->
+          <div class="about-card glass">
+            <h3 class="about-card-title">Infrastructure</h3>
+            <div class="skills-grid">
+              <span class="skill-tag glass">Kubernetes</span>
+              <span class="skill-tag glass">Docker</span>
+              <span class="skill-tag glass">AWS</span>
+              <span class="skill-tag glass">GCP</span>
+              <span class="skill-tag glass">Terraform</span>
+              <span class="skill-tag glass">Ray</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <!-- Experience Section -->
-    <section id="experience" class="experience-section">
-      <div class="experience-container">
+    <!-- Experience Section - Vertical Timeline -->
+    <section id="experience" class="experience-section" data-section="experience">
+      <div class="section-header">
         <span class="section-label">Experience</span>
         <h2 class="section-title">Where I've Worked</h2>
+      </div>
 
+      <div class="experience-container">
         <div class="timeline">
-          <div class="timeline-item">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content glass">
-              <div class="timeline-header">
-                <h3>Senior ML Engineer</h3>
-                <span class="timeline-company">Autonomous Systems Inc.</span>
-              </div>
-              <span class="timeline-date">2022 — Present</span>
-              <p>Leading perception team building real-time 3D object detection and tracking systems for autonomous
-                vehicles. Reduced inference latency by 60% while improving mAP by 12%.</p>
+
+          <!-- Experience 1 -->
+          <div class="experience-card glass">
+            <div class="experience-header">
+              <h3>Senior ML Engineer</h3>
+              <span class="experience-company">Autonomous Systems Inc.</span>
             </div>
+            <span class="experience-date">2022 — Present</span>
+            <p>Leading perception team building real-time 3D object detection and tracking systems for autonomous
+              vehicles. Reduced inference latency by 60% while improving mAP by 12%.</p>
           </div>
 
-          <div class="timeline-item">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content glass">
-              <div class="timeline-header">
-                <h3>Robotics Engineer</h3>
-                <span class="timeline-company">Racing Robotics Lab</span>
-              </div>
-              <span class="timeline-date">2020 — 2022</span>
-              <p>Developed full-stack autonomous racing systems from perception to control. Built 200Hz control loops
-                and real-time trajectory optimization achieving competition podium finishes.</p>
+          <!-- Experience 2 -->
+          <div class="experience-card glass">
+            <div class="experience-header">
+              <h3>Robotics Engineer</h3>
+              <span class="experience-company">Racing Robotics Lab</span>
             </div>
+            <span class="experience-date">2020 — 2022</span>
+            <p>Developed full-stack autonomous racing systems from perception to control. Built 200Hz control loops and
+              real-time trajectory optimization achieving competition podium finishes.</p>
           </div>
 
-          <div class="timeline-item">
-            <div class="timeline-marker"></div>
-            <div class="timeline-content glass">
-              <div class="timeline-header">
-                <h3>Software Engineer</h3>
-                <span class="timeline-company">Tech Corp</span>
-              </div>
-              <span class="timeline-date">2018 — 2020</span>
-              <p>Built distributed training infrastructure scaling to 128+ GPUs. Designed gradient compression
-                algorithms achieving 3.2x speedup with minimal accuracy loss.</p>
+          <!-- Experience 3 -->
+          <div class="experience-card glass">
+            <div class="experience-header">
+              <h3>Software Engineer</h3>
+              <span class="experience-company">Tech Corp</span>
             </div>
+            <span class="experience-date">2018 — 2020</span>
+            <p>Built distributed training infrastructure scaling to 128+ GPUs. Designed gradient compression algorithms
+              achieving 3.2x speedup with minimal accuracy loss.</p>
           </div>
+
+          <!-- Experience 4 -->
+          <div class="experience-card glass">
+            <div class="experience-header">
+              <h3>Research Intern</h3>
+              <span class="experience-company">AI Research Lab</span>
+            </div>
+            <span class="experience-date">2017 — 2018</span>
+            <p>Developed novel neural network architectures for motion prediction. Published research on temporal
+              modeling techniques for autonomous driving applications.</p>
+          </div>
+
         </div>
       </div>
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="contact-section">
+    <section id="contact" class="contact-section" data-section="contact">
       <div class="contact-container">
         <span class="section-label">Contact</span>
         <h2 class="section-title">Let's Build<br />Something Great</h2>
@@ -515,7 +601,7 @@
           or robotics projects? I'm always open to discussing new challenges.
         </p>
         <div class="contact-cta">
-          <a href="mailto:hello@example.com" class="btn-primary glass">
+          <a href="mailto:hello@example.com" class="btn-primary glass glass-shimmer">
             <span>Get in Touch</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M5 12h14M12 5l7 7-7 7" />

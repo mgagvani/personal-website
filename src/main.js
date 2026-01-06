@@ -6,7 +6,7 @@
 import './style.css'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { initThreeScene } from './three-scene.js'
+import { initThreeScene, setOrbitEnabled } from './three-scene.js'
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger)
@@ -56,7 +56,7 @@ function initNavIndicator() {
       if (targetSection) {
         // Temporarily disable scroll-triggered updates
         navNavigationInProgress = true
-        
+
         // Animate indicator to clicked link
         moveIndicatorToLink(link)
 
@@ -94,18 +94,42 @@ function initNavIndicator() {
     })
   })
 
-  // Update indicator on scroll
+  // Update indicator on scroll - properly account for pinned horizontal scroll sections
   const sections = document.querySelectorAll('section[data-section]')
 
-  sections.forEach(section => {
-    ScrollTrigger.create({
-      trigger: section,
-      start: 'top 40%',
-      end: 'bottom 40%',
-      onEnter: () => updateActiveSection(section.dataset.section, navLinks),
-      onEnterBack: () => updateActiveSection(section.dataset.section, navLinks),
+  // For pinned sections, we need to track based on visual position, not DOM position
+  // The approach: use the section's visual position relative to viewport
+
+  // Track currently active section to avoid redundant updates
+  let lastActiveSection = null
+
+  const updateNavOnScroll = () => {
+    if (navNavigationInProgress) return
+
+    const viewportCenter = window.innerHeight / 2
+    let activeSection = null
+
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect()
+      // A section is "active" if its top is above viewport center AND bottom is below viewport center
+      if (rect.top <= viewportCenter && rect.bottom >= viewportCenter) {
+        activeSection = section.dataset.section
+      }
     })
-  })
+
+    // Only update if section changed
+    if (activeSection && activeSection !== lastActiveSection) {
+      lastActiveSection = activeSection
+      updateActiveSection(activeSection, navLinks)
+      // Enable orbit only on hero and contact sections
+      setOrbitEnabled(activeSection === 'hero' || activeSection === 'contact')
+    }
+  }
+
+  // Use scroll event for real-time tracking (works with pinned sections)
+  window.addEventListener('scroll', updateNavOnScroll, { passive: true })
+  // Initial check
+  setTimeout(updateNavOnScroll, 100)
 }
 
 /**
@@ -116,7 +140,7 @@ function moveIndicatorToLink(link) {
   if (!indicator || indicatorAnimationInProgress) return
 
   indicatorAnimationInProgress = true
-  
+
   // Get link's position relative to nav-links container
   const navLinks = link.closest('.nav-links')
   if (!navLinks) {
@@ -145,7 +169,7 @@ function moveIndicatorToLink(link) {
 function updateActiveSection(sectionId, navLinks) {
   // Skip if navigation is in progress
   if (navNavigationInProgress) return
-  
+
   if (currentSection === sectionId) return
   currentSection = sectionId
 
@@ -306,7 +330,7 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
   // Use ScrollTrigger.matchMedia for responsive animations
   ScrollTrigger.matchMedia({
     // Desktop: Horizontal scroll animation linked to vertical scroll
-    "(min-width: 769px)": function() {
+    "(min-width: 769px)": function () {
       const scrollTriggerConfig = {
         trigger: container,
         start: 'top 20%',
@@ -335,13 +359,13 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
     },
 
     // Mobile: Native scroll, reset transforms
-    "(max-width: 768px)": function() {
+    "(max-width: 768px)": function () {
       // Clear any transform applied by desktop animation
       gsap.set(track, { clearProps: "x" });
-      
+
       // Reset progress bar
       if (progressBar) {
-         gsap.set(progressBar, { width: "0%" });
+        gsap.set(progressBar, { width: "0%" });
       }
     }
   });

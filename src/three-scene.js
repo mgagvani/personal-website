@@ -31,6 +31,17 @@ let cameraPhi = 0.4 // vertical angle (radians from horizontal)
 /**
  * Initialize the Three.js scene with PLY point cloud
  */
+let orbitEnabled = true // Controls whether orbit interactions are allowed
+
+export function setOrbitEnabled(enabled) {
+    orbitEnabled = enabled
+    const canvas = document.getElementById('three-canvas')
+    if (canvas) {
+        canvas.style.pointerEvents = enabled ? 'auto' : 'none'
+        canvas.style.cursor = enabled ? 'grab' : 'default'
+    }
+}
+
 export function initThreeScene() {
     const canvas = document.getElementById('three-canvas')
     if (!canvas) return

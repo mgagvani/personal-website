@@ -57,6 +57,8 @@ export function initThreeScene() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setClearColor(0x000000, 0)
+    // Fix color space: PLYLoader converts to Linear, we need sRGB output for correct display
+    renderer.outputColorSpace = THREE.SRGBColorSpace
 
     // Load PLY point cloud
     loadPointCloud()
@@ -84,8 +86,16 @@ export function initThreeScene() {
 function loadPointCloud() {
     const loader = new PLYLoader()
 
+    let choices = [
+        "/scene-0061.ply",
+        "/scene-0355.ply",
+    ]
+
+    let choice = choices[Math.floor(Math.random() * choices.length)]
+    let scale_factor = navigator.userAgent.includes('Mobile') ? 25 : 75
+
     loader.load(
-        '/pointcloud.ply',
+        choice,
         (geometry) => {
             // Center the geometry
             geometry.computeBoundingBox()
@@ -97,13 +107,16 @@ function loadPointCloud() {
             const size = new THREE.Vector3()
             geometry.boundingBox.getSize(size)
             const maxDim = Math.max(size.x, size.y, size.z)
-            const scale = 50 / maxDim
+            const scale = scale_factor / maxDim
             geometry.scale(scale, scale, scale)
 
             // Rotate to align PLY coordinates with Three.js
             // PLY: X=lateral, Y=forward, Z=up
             // Three.js: X=lateral, Y=up, Z=forward
             geometry.rotateX(-Math.PI / 2)
+
+            // Note: PLYLoader automatically normalizes 0-255 colors to 0-1 and converts to Linear
+            // The renderer.outputColorSpace = SRGBColorSpace handles the display conversion
 
             // Use vertex colors from PLY if available
             let material
@@ -112,7 +125,7 @@ function loadPointCloud() {
                     size: 0.15,
                     vertexColors: true,
                     transparent: true,
-                    opacity: 0.85,
+                    opacity: 0.9,
                     sizeAttenuation: true
                 })
             } else {
@@ -207,10 +220,10 @@ function animate() {
     animationId = requestAnimationFrame(animate)
     time += 0.016 // ~60fps
 
-    // Auto-rotate when not interacting
-    if (!isUserInteracting && pointCloud) {
-        currentRotationY += 0.001
-        pointCloud.rotation.y = currentRotationY
+    // Auto-rotate camera when not interacting
+    if (!isUserInteracting) {
+        cameraTheta += 0.002
+        updateCameraPosition()
     }
 
     // Smooth camera distance transition
@@ -243,10 +256,11 @@ function onMouseDown(event) {
     previousMouseX = event.clientX
     previousMouseY = event.clientY
     clearTimeout(interactionTimeout)
+    document.body.classList.add('canvas-dragging')
 }
 
 /**
- * Mouse move - orbit camera or rotate point cloud
+ * Mouse move - orbit camera around the scene
  */
 function onMouseMove(event) {
     if (!isDragging) return
@@ -254,16 +268,12 @@ function onMouseMove(event) {
     const deltaX = event.clientX - previousMouseX
     const deltaY = event.clientY - previousMouseY
 
-    // Rotate the point cloud based on drag
-    if (pointCloud) {
-        currentRotationY += deltaX * 0.005
-        pointCloud.rotation.y = currentRotationY
+    // Orbit camera around the scene
+    cameraTheta -= deltaX * 0.005  // Horizontal orbit
+    cameraPhi += deltaY * 0.003    // Vertical orbit
+    cameraPhi = Math.max(0.1, Math.min(1.4, cameraPhi)) // Clamp vertical angle
 
-        // Adjust camera phi (vertical angle) with vertical drag
-        cameraPhi += deltaY * 0.003
-        cameraPhi = Math.max(0.1, Math.min(1.2, cameraPhi)) // Clamp
-        updateCameraPosition()
-    }
+    updateCameraPosition()
 
     previousMouseX = event.clientX
     previousMouseY = event.clientY
@@ -274,6 +284,7 @@ function onMouseMove(event) {
  */
 function onMouseUp() {
     isDragging = false
+    document.body.classList.remove('canvas-dragging')
 
     // Resume auto-rotation after 2 seconds of inactivity
     clearTimeout(interactionTimeout)
@@ -283,9 +294,14 @@ function onMouseUp() {
 }
 
 /**
- * Mouse wheel - zoom in/out
+ * Mouse wheel - zoom in/out (only with Ctrl/Cmd held, otherwise page scrolls)
  */
 function onWheel(event) {
+    // Only zoom when Ctrl/Cmd is held, otherwise let page scroll normally
+    if (!event.ctrlKey && !event.metaKey) {
+        return // Don't prevent default - let page scroll
+    }
+
     event.preventDefault()
 
     isUserInteracting = true
@@ -325,14 +341,11 @@ function onTouchMove(event) {
     const deltaX = event.touches[0].clientX - previousMouseX
     const deltaY = event.touches[0].clientY - previousMouseY
 
-    if (pointCloud) {
-        currentRotationY += deltaX * 0.005
-        pointCloud.rotation.y = currentRotationY
-
-        cameraPhi += deltaY * 0.003
-        cameraPhi = Math.max(0.1, Math.min(1.2, cameraPhi))
-        updateCameraPosition()
-    }
+    // Orbit camera around the scene
+    cameraTheta -= deltaX * 0.005
+    cameraPhi += deltaY * 0.003
+    cameraPhi = Math.max(0.1, Math.min(1.4, cameraPhi))
+    updateCameraPosition()
 
     previousMouseX = event.touches[0].clientX
     previousMouseY = event.touches[0].clientY

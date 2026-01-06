@@ -655,6 +655,31 @@ h6 {
   will-change: transform;
 }
 
+/* Mobile: Enable native horizontal scroll on the track */
+@media (max-width: 768px) {
+
+  .projects-scroll-container,
+  .about-scroll-container {
+    overflow: visible;
+  }
+
+  .projects-track,
+  .about-track {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding-right: var(--container-padding);
+  }
+
+  .project-card,
+  .about-card {
+    scroll-snap-align: center;
+    flex-shrink: 0;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Project Cards - Glass Style
    -------------------------------------------------------------------------- */

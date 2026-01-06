@@ -1,7 +1,32 @@
-/* ==========================================================================
-   Engineering Portfolio - Design System
-   Editorial-minimal layout with liquid glass UI
-   ========================================================================== */
+/* Prevent scroll bounce on mobile */
+@media (max-width: 768px) {
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Disable pinning on mobile - use regular horizontal scroll on the track */
+  .projects-scroll-container,
+  .about-scroll-container {
+    overflow: visible;
+  }
+  
+  .projects-track,
+  .about-track {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-align: none;
+    /* Ensure nice padding at ends */
+    padding-right: var(--container-padding);
+  }
+  
+  .project-card,
+  .about-card {
+    scroll-snap-align: center;
+  }
+}
 
 /* --------------------------------------------------------------------------
    Custom Properties for Animated Gradients (Liquid Glass)
@@ -356,6 +381,15 @@ h6 {
   border-radius: var(--radius-full);
   z-index: 100;
   transition: all var(--duration-normal) var(--ease-out);
+}
+
+/* Fix for nav oscillation: preserve translateX during hover/active scale */
+.nav.glass:hover {
+  transform: translateX(-50%) scale(0.99);
+}
+
+.nav.glass:active {
+  transform: translateX(-50%) scale(0.98);
 }
 
 .nav-logo {

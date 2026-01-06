@@ -14,6 +14,8 @@ gsap.registerPlugin(ScrollTrigger)
 // Global state
 let currentSection = 'hero'
 const navIndicator = document.querySelector('.nav-indicator')
+let indicatorAnimationInProgress = false
+let navNavigationInProgress = false
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -52,6 +54,9 @@ function initNavIndicator() {
       const targetSection = document.getElementById(targetId)
 
       if (targetSection) {
+        // Temporarily disable scroll-triggered updates
+        navNavigationInProgress = true
+        
         // Animate indicator to clicked link
         moveIndicatorToLink(link)
 
@@ -73,7 +78,13 @@ function initNavIndicator() {
         gsap.to(window, {
           duration: 1.2,
           scrollTo: { y: targetSection, offsetY: 50 },
-          ease: 'power3.inOut'
+          ease: 'power3.inOut',
+          onComplete: () => {
+            // Re-enable after scroll completes
+            setTimeout(() => {
+              navNavigationInProgress = false
+            }, 500)
+          }
         })
 
         // Update active state
@@ -102,11 +113,16 @@ function initNavIndicator() {
  */
 function moveIndicatorToLink(link) {
   const indicator = document.querySelector('.nav-indicator')
-  if (!indicator) return
+  if (!indicator || indicatorAnimationInProgress) return
 
-  // Get the link's position relative to nav-links container
+  indicatorAnimationInProgress = true
+  
+  // Get link's position relative to nav-links container
   const navLinks = link.closest('.nav-links')
-  if (!navLinks) return
+  if (!navLinks) {
+    indicatorAnimationInProgress = false
+    return
+  }
 
   const linkOffset = link.offsetLeft
   const linkWidth = link.offsetWidth
@@ -116,7 +132,10 @@ function moveIndicatorToLink(link) {
     width: linkWidth,
     opacity: 1,
     duration: 0.4,
-    ease: 'power3.out'
+    ease: 'power3.out',
+    onComplete: () => {
+      indicatorAnimationInProgress = false
+    }
   })
 }
 
@@ -124,6 +143,9 @@ function moveIndicatorToLink(link) {
  * Update active section based on scroll position
  */
 function updateActiveSection(sectionId, navLinks) {
+  // Skip if navigation is in progress
+  if (navNavigationInProgress) return
+  
   if (currentSection === sectionId) return
   currentSection = sectionId
 
@@ -281,32 +303,50 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
     return track.scrollWidth - container.offsetWidth
   }
 
-  // Create the horizontal scroll animation
-  gsap.to(track, {
-    x: () => -getScrollWidth(),
-    ease: 'none',
-    scrollTrigger: {
-      trigger: container,
-      start: 'top 20%',
-      end: () => `+=${getScrollWidth()}`,
-      scrub: 1,
-      pin: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        // Update progress bar if exists
-        if (progressBar) {
-          gsap.to(progressBar, {
-            width: `${self.progress * 100}%`,
-            duration: 0.1,
-            ease: 'none'
-          })
+  // Use ScrollTrigger.matchMedia for responsive animations
+  ScrollTrigger.matchMedia({
+    // Desktop: Horizontal scroll animation linked to vertical scroll
+    "(min-width: 769px)": function() {
+      const scrollTriggerConfig = {
+        trigger: container,
+        start: 'top 20%',
+        end: () => `+=${getScrollWidth()}`,
+        scrub: 1,
+        anticipatePin: 1,
+        pin: true,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          // Update progress bar
+          if (progressBar) {
+            gsap.to(progressBar, {
+              width: `${self.progress * 100}%`,
+              duration: 0.1,
+              ease: 'none'
+            })
+          }
         }
       }
-    }
-  })
 
-  // Animate cards as they come into view
+      gsap.to(track, {
+        x: () => -getScrollWidth(),
+        ease: 'none',
+        scrollTrigger: scrollTriggerConfig
+      })
+    },
+
+    // Mobile: Native scroll, reset transforms
+    "(max-width: 768px)": function() {
+      // Clear any transform applied by desktop animation
+      gsap.set(track, { clearProps: "x" });
+      
+      // Reset progress bar
+      if (progressBar) {
+         gsap.set(progressBar, { width: "0%" });
+      }
+    }
+  });
+
+  // Animate cards entrance
   if (cards.length > 0) {
     gsap.fromTo(cards,
       { opacity: 0, y: 50, scale: 0.95, x: 30 },

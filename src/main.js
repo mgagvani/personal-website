@@ -391,9 +391,13 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
     )
   }
 
-  // Refresh ScrollTrigger on resize
+  // Refresh ScrollTrigger on resize (but not during fullscreen)
   let resizeTimer
   window.addEventListener('resize', () => {
+    // Don't refresh if in fullscreen mode (e.g., YouTube video)
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      return
+    }
     clearTimeout(resizeTimer)
     resizeTimer = setTimeout(() => {
       ScrollTrigger.refresh()

@@ -891,6 +891,7 @@ h6 {
 
 .scroll-hint.hidden {
   opacity: 0;
+  pointer-events: none;
 }
 
 .scroll-hint-content {
@@ -902,6 +903,8 @@ h6 {
   border-radius: var(--radius-full);
   color: var(--accent);
   animation: scrollHintBounce 1.8s var(--ease-in-out) infinite;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .scroll-hint-arrow {

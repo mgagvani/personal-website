@@ -387,6 +387,22 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
     }
   });
 
+  // Scroll hint click - scroll forward a bit
+  if (scrollHint) {
+    scrollHint.querySelector('.scroll-hint-content').addEventListener('click', () => {
+      const isMobile = window.innerWidth <= 768
+      if (isMobile) {
+        // Mobile: scroll the track by one card width
+        const card = track.querySelector('.project-card, .experience-card')
+        const scrollAmount = card ? card.offsetWidth + 32 : 300
+        track.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+      } else {
+        // Desktop: scroll the page down to advance the pinned horizontal scroll
+        window.scrollBy({ top: 300, behavior: 'smooth' })
+      }
+    })
+  }
+
   // Animate cards entrance
   if (cards.length > 0) {
     gsap.fromTo(cards,

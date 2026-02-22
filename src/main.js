@@ -277,9 +277,6 @@ function initHorizontalScrollSections() {
   // Projects horizontal scroll
   initHorizontalScroll('.projects-scroll-container', '.projects-track', '.scroll-progress-bar')
 
-  // About horizontal scroll
-  initHorizontalScroll('.about-scroll-container', '.about-track', null)
-
   // Experience section - animate cards on scroll (no horizontal scroll)
   initExperienceAnimations()
 }
@@ -320,7 +317,7 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
   if (!container || !track) return
 
   // Get cards within this track
-  const cards = track.querySelectorAll('.project-card, .about-card, .experience-card')
+  const cards = track.querySelectorAll('.project-card, .experience-card')
 
   // Calculate the total scroll width
   const getScrollWidth = () => {
@@ -413,7 +410,7 @@ function initInteractions() {
   gsap.registerPlugin(ScrollToPlugin)
 
   // Card hover effects with slide
-  document.querySelectorAll('.project-card, .about-card, .experience-card').forEach(card => {
+  document.querySelectorAll('.project-card, .experience-card').forEach(card => {
     card.addEventListener('mouseenter', () => {
       gsap.to(card, {
         y: -12,

@@ -1,34 +1,4 @@
-/* Prevent scroll bounce on mobile */
-@media (max-width: 768px) {
-
-  html,
-  body {
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Disable pinning on mobile - use regular horizontal scroll on the track */
-  .projects-scroll-container,
-  .about-scroll-container {
-    overflow: visible;
-  }
-
-  .projects-track,
-  .about-track {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-align: none;
-    /* Ensure nice padding at ends */
-    padding-right: var(--container-padding);
-  }
-
-  .project-card,
-  .about-card {
-    scroll-snap-align: center;
-  }
-}
+/* Mobile-specific scroll behavior is defined in the responsive section below */
 
 /* --------------------------------------------------------------------------
    Custom Properties for Animated Gradients (Liquid Glass)
@@ -204,7 +174,6 @@ body::before {
 #app select,
 #app .nav,
 #app .project-card,
-#app .about-card,
 #app .experience-card,
 #app .btn-primary,
 #app .btn-secondary,
@@ -213,7 +182,13 @@ body::before {
 #app .hero-cta,
 #app .metric-chip,
 #app .skill-tag,
-#app .tag {
+#app .tag,
+#app .projects-scroll-container,
+#app .projects-track,
+#app .projects-section,
+#app .experience-section,
+#app .contact-section,
+#app .hero {
   pointer-events: auto;
 }
 
@@ -290,7 +265,13 @@ h6 {
 .glass {
   --border-width: 1px;
   position: relative;
-  background: linear-gradient(var(--angle-2),
+  /* Firefox fallback: use static angle since @property not supported */
+  background: linear-gradient(-45deg,
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.15));
+  /* Chrome/Safari animated version */
+  background: linear-gradient(var(--angle-2, -45deg),
       rgba(255, 255, 255, 0.15),
       rgba(255, 255, 255, 0.35),
       rgba(255, 255, 255, 0.15));
@@ -320,18 +301,28 @@ h6 {
   left: calc(-1 * var(--border-width));
   padding: var(--border-width);
   box-sizing: border-box;
+  /* Firefox fallback: use static angle since @property not supported */
   background:
-    conic-gradient(from var(--angle-1) at 50% 50%,
+    conic-gradient(from -75deg at 50% 50%,
       rgba(0, 0, 0, 0.3),
       rgba(0, 0, 0, 0) 5% 40%,
       rgba(0, 0, 0, 0.3) 50%,
       rgba(0, 0, 0, 0) 60% 95%,
       rgba(0, 0, 0, 0.3)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
+  /* Chrome/Safari animated version */
+  background:
+    conic-gradient(from var(--angle-1, -75deg) at 50% 50%,
+      rgba(0, 0, 0, 0.3),
+      rgba(0, 0, 0, 0) 5% 40%,
+      rgba(0, 0, 0, 0.3) 50%,
+      rgba(0, 0, 0, 0) 60% 95%,
+      rgba(0, 0, 0, 0.3)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
   pointer-events: none;
   transition: all var(--duration-glass) var(--ease-glass),
     --angle-1 500ms ease;
@@ -344,12 +335,19 @@ h6 {
   z-index: 2;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(var(--angle-2),
+  /* Firefox fallback */
+  background: linear-gradient(-45deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 45% 55%,
+      rgba(255, 255, 255, 0) 100%);
+  /* Chrome/Safari animated version */
+  background: linear-gradient(var(--angle-2, -45deg),
       rgba(255, 255, 255, 0) 0%,
       rgba(255, 255, 255, 0.4) 45% 55%,
       rgba(255, 255, 255, 0) 100%);
   background-size: 200% 200%;
-  background-position: var(--shimmer-pos) 50%;
+  background-position: 0% 50%;
+  background-position: var(--shimmer-pos, 0%) 50%;
   mix-blend-mode: overlay;
   pointer-events: none;
   opacity: 0.7;
@@ -658,25 +656,31 @@ h6 {
 /* Mobile: Enable native horizontal scroll on the track */
 @media (max-width: 768px) {
 
-  .projects-scroll-container,
-  .about-scroll-container {
+  html,
+  body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .projects-scroll-container {
     overflow: visible;
   }
 
-  .projects-track,
-  .about-track {
+  .projects-track {
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     padding-right: var(--container-padding);
+    pointer-events: auto;
   }
 
-  .project-card,
-  .about-card {
+  .project-card {
     scroll-snap-align: center;
     flex-shrink: 0;
+    /* Ensure cards don't exceed viewport width */
+    max-width: 85vw;
   }
 }
 
@@ -861,109 +865,6 @@ h6 {
   box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
 }
 
-/* --------------------------------------------------------------------------
-   About Section - Horizontal Scroll Style
-   -------------------------------------------------------------------------- */
-.about-section {
-  padding: var(--space-32) 0;
-  overflow: hidden;
-}
-
-.about-section .section-header {
-  padding: 0 var(--container-padding);
-  max-width: var(--container-max);
-  margin: 0 auto var(--space-12);
-}
-
-.about-scroll-container {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-.about-track {
-  display: flex;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--container-padding);
-  will-change: transform;
-}
-
-.about-card {
-  flex: 0 0 auto;
-  width: clamp(300px, 35vw, 450px);
-  padding: var(--space-8);
-  border-radius: var(--radius-lg);
-  transition: all var(--duration-normal) var(--ease-out);
-}
-
-.about-card:hover {
-  transform: translateY(-8px);
-}
-
-.about-card-title {
-  font-size: var(--text-2xl);
-  margin-bottom: var(--space-4);
-}
-
-.about-card-text {
-  font-size: var(--text-base);
-  color: var(--text-muted);
-  line-height: 1.8;
-}
-
-.about-stats {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  min-width: 90px;
-  text-align: center;
-  transition: all var(--duration-normal) var(--ease-out);
-}
-
-.stat-item:hover {
-  transform: scale(1.05);
-}
-
-.stat-value {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.stat-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  margin-top: var(--space-1);
-}
-
-.skills-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.skill-tag {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.skill-tag:hover {
-  color: var(--accent);
-  transform: translateY(-2px);
-}
 
 /* --------------------------------------------------------------------------
    Experience Section - Vertical Timeline
@@ -1191,7 +1092,6 @@ h6 {
 .section-title,
 .section-description,
 .project-card,
-.about-card,
 .experience-card {
   opacity: 0;
 }
@@ -1205,7 +1105,6 @@ body.loaded .section-label,
 body.loaded .section-title,
 body.loaded .section-description,
 body.loaded .project-card,
-body.loaded .about-card,
 body.loaded .experience-card {
   opacity: 1;
 }
@@ -1218,7 +1117,6 @@ body.loaded .experience-card {
     width: clamp(320px, 70vw, 450px);
   }
 
-  .about-card,
   .experience-card {
     width: clamp(280px, 60vw, 380px);
   }
@@ -1260,7 +1158,6 @@ body.loaded .experience-card {
     width: 85vw;
   }
 
-  .about-card,
   .experience-card {
     width: 85vw;
   }

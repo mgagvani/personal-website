@@ -185,10 +185,11 @@ body::before {
 #app .tag,
 #app .projects-scroll-container,
 #app .projects-track,
-#app .projects-section,
-#app .experience-section,
-#app .contact-section,
-#app .hero {
+#app .section-header,
+#app .scroll-progress,
+#app .scroll-hint,
+#app .contact-container,
+#app .experience-container {
   pointer-events: auto;
 }
 

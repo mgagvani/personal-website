@@ -301,7 +301,7 @@ function onMouseUp() {
     clearTimeout(interactionTimeout)
     interactionTimeout = setTimeout(() => {
         isUserInteracting = false
-    }, 2000)
+    }, 500)
 }
 
 /**
@@ -325,7 +325,7 @@ function onWheel(event) {
     // Resume auto-rotation after delay
     interactionTimeout = setTimeout(() => {
         isUserInteracting = false
-    }, 2000)
+    }, 500)
 }
 
 /**
@@ -370,7 +370,7 @@ function onTouchEnd() {
 
     interactionTimeout = setTimeout(() => {
         isUserInteracting = false
-    }, 2000)
+    }, 500)
 }
 
 /**

@@ -324,6 +324,9 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
     return track.scrollWidth - container.offsetWidth
   }
 
+  // Scroll hint - hide when user starts scrolling
+  const scrollHint = container.querySelector('.scroll-hint')
+
   // Use ScrollTrigger.matchMedia for responsive animations
   ScrollTrigger.matchMedia({
     // Desktop: Horizontal scroll animation linked to vertical scroll
@@ -345,6 +348,12 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
               ease: 'none'
             })
           }
+          // Hide scroll hint once user starts scrolling
+          if (scrollHint && self.progress > 0.03) {
+            scrollHint.classList.add('hidden')
+          } else if (scrollHint && self.progress <= 0.01) {
+            scrollHint.classList.remove('hidden')
+          }
         }
       }
 
@@ -363,6 +372,17 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
       // Reset progress bar
       if (progressBar) {
         gsap.set(progressBar, { width: "0%" });
+      }
+
+      // Hide scroll hint when user scrolls the track on mobile
+      if (scrollHint) {
+        track.addEventListener('scroll', () => {
+          if (track.scrollLeft > 20) {
+            scrollHint.classList.add('hidden')
+          } else {
+            scrollHint.classList.remove('hidden')
+          }
+        }, { passive: true })
       }
     }
   });

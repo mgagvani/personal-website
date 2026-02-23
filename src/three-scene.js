@@ -268,6 +268,10 @@ function onMouseDown(event) {
     previousMouseY = event.clientY
     clearTimeout(interactionTimeout)
     document.body.classList.add('canvas-dragging')
+    // Track canvas orbit interaction
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'canvas_orbit', { interaction_type: 'drag' })
+    }
 }
 
 /**

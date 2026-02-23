@@ -17,6 +17,13 @@ const navIndicator = document.querySelector('.nav-indicator')
 let indicatorAnimationInProgress = false
 let navNavigationInProgress = false
 
+// Analytics helper - safe wrapper for gtag
+function trackEvent(eventName, params = {}) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventName, params)
+  }
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initThreeScene()
@@ -123,6 +130,8 @@ function initNavIndicator() {
       updateActiveSection(activeSection, navLinks)
       // Enable orbit only on hero and contact sections
       setOrbitEnabled(activeSection === 'hero' || activeSection === 'contact')
+      // Track section view
+      trackEvent('section_view', { section_name: activeSection })
     }
   }
 
@@ -390,6 +399,7 @@ function initHorizontalScroll(containerSelector, trackSelector, progressBarSelec
   // Scroll hint click - scroll forward a bit
   if (scrollHint) {
     scrollHint.querySelector('.scroll-hint-content').addEventListener('click', () => {
+      trackEvent('scroll_hint_click', { section: containerSelector })
       const isMobile = window.innerWidth <= 768
       if (isMobile) {
         // Mobile: scroll the track by one card width
@@ -598,6 +608,48 @@ function initInteractions() {
         once: true
       })
     }
+  })
+
+  // --- Analytics: Track clicks on key interactive elements ---
+
+  // Project "Read more" links
+  document.querySelectorAll('.project-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const card = link.closest('.project-card')
+      const projectName = card?.querySelector('.project-title')?.textContent || 'Unknown'
+      trackEvent('project_click', {
+        project_name: projectName,
+        link_url: link.href
+      })
+    })
+  })
+
+  // Social links (GitHub, LinkedIn, X, Resume)
+  document.querySelectorAll('.social-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const href = link.href || ''
+      let platform = 'unknown'
+      if (href.includes('github')) platform = 'github'
+      else if (href.includes('linkedin')) platform = 'linkedin'
+      else if (href.includes('twitter') || href.includes('x.com')) platform = 'x'
+      else if (href.includes('.pdf')) platform = 'resume'
+      trackEvent('social_click', { platform, link_url: href })
+    })
+  })
+
+  // CTA buttons (View Projects, Contact Me, Get in Touch)
+  document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const label = btn.textContent.trim()
+      trackEvent('cta_click', { button_label: label, link_url: btn.href || '' })
+    })
+  })
+
+  // Nav link clicks
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      trackEvent('nav_click', { link_label: link.textContent.trim(), link_url: link.href || '' })
+    })
   })
 }
 
